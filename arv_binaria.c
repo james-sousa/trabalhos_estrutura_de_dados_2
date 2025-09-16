@@ -804,7 +804,7 @@ int main() {
                 break;
             
             case 11:
-                printf("Digite o tipo de categoria (ex: Noticias, Esporte): ");
+                printf("Digite o tipo de categoria (ex: noticias, esporte): ");
                 fgets(tipoCategoria, 30, stdin);
                 tipoCategoria[strcspn(tipoCategoria, "\n")] = 0;
                 printf("\nStreams com categoria do tipo '%s':\n", tipoCategoria);
