@@ -609,13 +609,13 @@ int main() {
         printf("11. Mostrar Apresentadores\n");
         printf("12. Alterar Stream de Apresentador\n");
         printf("13. Mostrar Streams por Tipo de Categoria\n");
-        printf("14. Mostrar Streams por Nome de Categoria\n"); // Novo item
-        printf("15. Mostrar Programas por Dia e Horario\n");    // Novo item
-        printf("16. Mostrar Programas por Dia da Semana\n");      // Novo item
-        printf("17. Mostrar Apresentadores por Stream\n");      // Novo item
-        printf("18. Mostrar Apresentadores por Categoria\n");  // Novo item
-        printf("19. Mostrar Dados de um Programa\n");           // Novo item
-        printf("20. Remover Categoria\n");                       // Novo item
+        printf("14. Mostrar Streams por Nome de Categoria\n"); 
+        printf("15. Mostrar Programas por Dia e Horario\n");   
+        printf("16. Mostrar Programas por Dia da Semana\n");     
+        printf("17. Mostrar Apresentadores por Stream\n");     
+        printf("18. Mostrar Apresentadores por Categoria\n");  
+        printf("19. Mostrar Dados de um Programa\n");           
+        printf("20. Remover Categoria\n");                       
         printf("0. Sair\n");
         printf("Escolha: ");
         scanf("%d", &opcao);
@@ -816,7 +816,7 @@ int main() {
                 break;
 
             case 13:   
-                printf("Digite o tipo de categoria para buscar streams (ex: Noticias, Esporte): ");
+                printf("Digite o tipo de categoria para buscar streams (ex: noticias, esporte): ");
                 fgets(tipoCategoria, 30, stdin);
                 tipoCategoria[strcspn(tipoCategoria, "\n")] = 0;
                 printf("\nStreams com categoria do tipo '%s':\n", tipoCategoria);
