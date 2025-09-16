@@ -58,7 +58,6 @@ Stream* buscarStream(Stream *raiz, char nome[]);
 Categoria* buscarCategoria(Categoria *lista, char nome[]);
 void buscarProgramasPorApresentador(Stream *raiz, char nomeApresentador[], int *encontrado);
 
-
 // Parte de James -  FUNÇÕES ---
 Stream* criarStream(char nome[], char site[]) {
     Stream *novo = (Stream*)malloc(sizeof(Stream));
@@ -73,13 +72,17 @@ Stream* criarStream(char nome[], char site[]) {
 void cadastrarStream(Stream **raiz, char nome[], char site[]) {
     if (*raiz == NULL) {
         *raiz = criarStream(nome, site);
+        printf("Stream cadastrada com sucesso!\n");
         return;
     } else {
         int cmp = strcmp(nome, (*raiz)->nome);
         if (cmp < 0) {
             cadastrarStream(&((*raiz)->esq), nome, site);
+            
+            
         } else if (cmp > 0) {
             cadastrarStream(&((*raiz)->dir), nome, site);
+            
         } else {
             printf("Stream '%s' ja cadastrado!\n", nome);
         }
@@ -659,6 +662,7 @@ int main() {
                 fgets(site, 100, stdin);
                 site[strcspn(site, "\n")] = 0;
                 cadastrarStream(&raiz, nome, site);
+                
                 break;
 
             case 2:
