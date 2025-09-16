@@ -53,7 +53,18 @@ typedef struct apresentador {
 
 // declaracao de prototipo
 Categoria* buscarCategoria(Categoria *lista, char nome[]);
-
+void mostrarDadosPrograma(Programa *raiz, char nomePrograma[]);
+Categoria* buscarCategoria(Categoria *lista, char nome[]);
+Apresentador* buscarApresentador(Apresentador *lista, char nome[]);
+void mostrarProgramas(Programa *raiz);
+void mostrarApresentadores(Apresentador *lista);
+void buscarStreamPorTipoCategoria(Stream *raiz, const char tipo[]);
+void buscarProgramasPorDiaHorario(Programa *raiz, char periodicidade[], char horario[]);
+void buscarProgramasPorDiaSemana(Programa *raiz, char periodicidade[]);
+void mostrarProgramasCategoriaStream(Stream *s, char nomeCategoria[]);
+void mostrarApresentadoresPorCategoria(Apresentador *lista, char nomeCategoria[]);
+void mostrarApresentadoresPorStream(Apresentador *lista, char nomeStream[]);
+void removerCategoria(Stream *s, char nomeCategoria[]);
 
 // -- James : FUNÇÕES AVL ---
 int altura(Stream *raiz) {
@@ -159,6 +170,8 @@ void mostrarStream(Stream *raiz) {
     }
 }
 
+
+
 Stream* encontrarMinimo(Stream *raiz) {
     Stream *atual = raiz;
     while (atual && atual->esq != NULL) {
@@ -247,7 +260,72 @@ void mostrarCategorias(Categoria *lista) {
     } while (atual != lista);
 }
 
-// --- SUA PARTE: FUNÇÕES ---
+// Implementacao da funcao de remocao de categoria
+void removerCategoria(Stream *s, char nomeCategoria[]) {
+    if (s == NULL || s->categorias == NULL) {
+        printf("Stream ou categoria nao encontrada.\n");
+        return;
+    }
+    Categoria *atual = s->categorias;
+    Categoria *anterior = NULL;
+    
+    // Procura a categoria e seu anterior
+    do {
+        if (strcmp(atual->nome, nomeCategoria) == 0) {
+            if (atual->programas != NULL) {
+                printf("Não é possível remover a categoria. Ela ainda contém programas.\n");
+                return;
+            }
+            break;
+        }
+        anterior = atual;
+        atual = atual->prox;
+    } while (atual != s->categorias);
+
+    if (strcmp(atual->nome, nomeCategoria) != 0) {
+        printf("Categoria '%s' nao encontrada.\n", nomeCategoria);
+        return;
+    }
+
+    if (atual == s->categorias && atual->prox == s->categorias) { // Unico elemento
+        s->categorias = NULL;
+    } else {
+        if (atual == s->categorias) {
+            Categoria *ultimo = s->categorias;
+            while(ultimo->prox != s->categorias) {
+                ultimo = ultimo->prox;
+            }
+            s->categorias = atual->prox;
+            ultimo->prox = s->categorias;
+        } else {
+            anterior->prox = atual->prox;
+        }
+    }
+    free(atual);
+    printf("Categoria '%s' removida com sucesso.\n", nomeCategoria);
+}
+
+// Implementacao da funcao de busca de streams por nome de categoria
+void buscarStreamPorNomeCategoria(Stream *raiz, char nomeCategoria[]) {
+    if (raiz == NULL) {
+        return;
+    }
+    buscarStreamPorNomeCategoria(raiz->esq, nomeCategoria);
+    Categoria *cat = raiz->categorias;
+    if (cat != NULL) {
+        Categoria *atual = cat;
+        do {
+            if (strcmp(atual->nome, nomeCategoria) == 0) {
+                printf("Stream: %s\n", raiz->nome);
+                break;
+            }
+            atual = atual->prox;
+        } while (atual != cat);
+    }
+    buscarStreamPorNomeCategoria(raiz->dir, nomeCategoria);
+}
+
+// ---Eu : FUNÇÕES ---
 Programa* criarPrograma(char nome[], char periodicidade[], int duracao, char horario[], int aoVivo, char apresentador[]) {
     Programa *novo = (Programa*) malloc(sizeof(Programa));
     strcpy(novo->nome, nome);
@@ -288,6 +366,22 @@ Programa* encontrarMinimoPrograma(Programa *raiz) {
     while (raiz && raiz->esq != NULL) raiz = raiz->esq;
     return raiz;
 }
+
+void mostrarDadosPrograma(Programa *raiz, char nomePrograma[]) {
+    Programa* programa = buscarPrograma(raiz, nomePrograma);
+    if (programa != NULL) {
+        printf("\n--- Dados do Programa: %s ---\n", programa->nome);
+        printf("Periodicidade: %s\n", programa->periodicidade);
+        printf("Duracao: %d minutos\n", programa->duracao);
+        printf("Horario: %s\n", programa->horario);
+        printf("Ao Vivo: %s\n", programa->aoVivo ? "Sim" : "Nao");
+        printf("Apresentador: %s\n", programa->apresentador);
+        printf("-------------------------------\n");
+    } else {
+        printf("Programa '%s' nao encontrado.\n", nomePrograma);
+    }
+}
+
 
 Programa* removerPrograma(Programa* raiz, char nome[]) {
     if (raiz == NULL) {
@@ -424,6 +518,69 @@ void buscarStreamPorTipoCategoria(Stream *raiz, const char tipo[]) {
     }
     buscarStreamPorTipoCategoria(raiz->dir, tipo);
 }
+// Funcao para buscar programas por dia e horario
+void buscarProgramasPorDiaHorario(Programa *raiz, char periodicidade[], char horario[]) {
+    if (raiz == NULL) {
+        return;
+    }
+    buscarProgramasPorDiaHorario(raiz->esq, periodicidade, horario);
+    if (strcmp(raiz->periodicidade, periodicidade) == 0 && strcmp(raiz->horario, horario) == 0) {
+        printf("   - Programa: %s | Apresentador: %s\n", raiz->nome, raiz->apresentador);
+    }
+    buscarProgramasPorDiaHorario(raiz->dir, periodicidade, horario);
+}
+
+// Funcao para buscar programas por dia da semana
+void buscarProgramasPorDiaSemana(Programa *raiz, char periodicidade[]) {
+    if (raiz == NULL) {
+        return;
+    }
+    buscarProgramasPorDiaSemana(raiz->esq, periodicidade);
+    if (strcmp(raiz->periodicidade, periodicidade) == 0) {
+        printf("   - Programa: %s | Horario: %s | Apresentador: %s\n", raiz->nome, raiz->horario, raiz->apresentador);
+    }
+    buscarProgramasPorDiaSemana(raiz->dir, periodicidade);
+}
+
+// Funcao para mostrar todos os apresentadores de uma determinada stream
+void mostrarApresentadoresPorStream(Apresentador *lista, char nomeStream[]) {
+    if (lista == NULL) {
+        printf("Nenhum apresentador cadastrado.\n");
+        return;
+    }
+    int encontrado = 0;
+    Apresentador *atual = lista;
+    while (atual != NULL) {
+        if (strcmp(atual->streamAtual, nomeStream) == 0) {
+            printf("Apresentador: %s | Categoria: %s\n", atual->nome, atual->categoria);
+            encontrado = 1;
+        }
+        atual = atual->prox;
+    }
+    if (!encontrado) {
+        printf("Nenhum apresentador encontrado para a stream '%s'.\n", nomeStream);
+    }
+}
+
+// Funcao para mostrar todos os apresentadores de uma determinada categoria
+void mostrarApresentadoresPorCategoria(Apresentador *lista, char nomeCategoria[]) {
+    if (lista == NULL) {
+        printf("Nenhum apresentador cadastrado.\n");
+        return;
+    }
+    int encontrado = 0;
+    Apresentador *atual = lista;
+    while (atual != NULL) {
+        if (strcmp(atual->categoria, nomeCategoria) == 0) {
+            printf("Apresentador: %s | Stream Atual: %s\n", atual->nome, atual->streamAtual);
+            encontrado = 1;
+        }
+        atual = atual->prox;
+    }
+    if (!encontrado) {
+        printf("Nenhum apresentador encontrado para a categoria '%s'.\n", nomeCategoria);
+    }
+}
 
 // -- MAIN ---
 int main() {
@@ -452,6 +609,13 @@ int main() {
         printf("11. Mostrar Apresentadores\n");
         printf("12. Alterar Stream de Apresentador\n");
         printf("13. Mostrar Streams por Tipo de Categoria\n");
+        printf("14. Mostrar Streams por Nome de Categoria\n"); // Novo item
+        printf("15. Mostrar Programas por Dia e Horario\n");    // Novo item
+        printf("16. Mostrar Programas por Dia da Semana\n");      // Novo item
+        printf("17. Mostrar Apresentadores por Stream\n");      // Novo item
+        printf("18. Mostrar Apresentadores por Categoria\n");  // Novo item
+        printf("19. Mostrar Dados de um Programa\n");           // Novo item
+        printf("20. Remover Categoria\n");                       // Novo item
         printf("0. Sair\n");
         printf("Escolha: ");
         scanf("%d", &opcao);
@@ -523,7 +687,6 @@ int main() {
                 }
                 break;
             
-            // ---adcionado ao MENU
             case 7:
                 printf("Digite o nome da Stream: ");
                 fgets(nome, 50, stdin);
@@ -554,8 +717,13 @@ int main() {
                         fgets(nomeApresentador, 50, stdin);
                         nomeApresentador[strcspn(nomeApresentador, "\n")] = 0;
                         
-                        if (buscarApresentador(listaApresentadores, nomeApresentador) == NULL) {
+                        Apresentador *apresentador = buscarApresentador(listaApresentadores, nomeApresentador);
+                        if (apresentador == NULL) {
                             printf("Apresentador nao cadastrado. Por favor, cadastre-o primeiro.\n");
+                        } else if (strcmp(apresentador->categoria, nomeCategoria) != 0) {
+                            printf("Apresentador trabalha em outra categoria ('%s'). Nao foi possivel cadastrar o programa.\n", apresentador->categoria);
+                        } else if (strcmp(apresentador->streamAtual, nome) != 0) {
+                            printf("Apresentador trabalha em outra stream ('%s'). Nao foi possivel cadastrar o programa.\n", apresentador->streamAtual);
                         } else {
                             cat->programas = cadastrarPrograma(cat->programas, nomePrograma, periodicidade, duracao, horario, aoVivo, nomeApresentador);
                         }
@@ -655,6 +823,119 @@ int main() {
                 buscarStreamPorTipoCategoria(raiz, tipoCategoria);
                 break;
 
+            case 14:
+                printf("Digite o nome da categoria para buscar streams: ");
+                fgets(nomeCategoria, 30, stdin);
+                nomeCategoria[strcspn(nomeCategoria, "\n")] = 0;
+                printf("\nStreams que contem a categoria '%s':\n", nomeCategoria);
+                buscarStreamPorNomeCategoria(raiz, nomeCategoria);
+                break;
+
+            case 15:
+                printf("Digite o nome da Stream: ");
+                fgets(nome, 50, stdin);
+                nome[strcspn(nome, "\n")] = 0;
+                s = buscarStream(raiz, nome);
+                if (s != NULL) {
+                    printf("Digite o nome da Categoria: ");
+                    fgets(nomeCategoria, 30, stdin);
+                    nomeCategoria[strcspn(nomeCategoria, "\n")] = 0;
+                    cat = buscarCategoria(s->categorias, nomeCategoria);
+                    if (cat != NULL) {
+                        printf("Digite a periodicidade (ex: diario, semanal): ");
+                        fgets(periodicidade, 20, stdin);
+                        periodicidade[strcspn(periodicidade, "\n")] = 0;
+                        printf("Digite o horario (ex: 10:00): ");
+                        fgets(horario, 20, stdin);
+                        horario[strcspn(horario, "\n")] = 0;
+                        printf("\nProgramas da stream '%s' na categoria '%s' no dia/horario '%s'/'%s':\n", nome, nomeCategoria, periodicidade, horario);
+                        buscarProgramasPorDiaHorario(cat->programas, periodicidade, horario);
+                    } else {
+                        printf("Categoria nao encontrada!\n");
+                    }
+                } else {
+                    printf("Stream nao encontrada!\n");
+                }
+                break;
+
+            case 16:
+                printf("Digite o nome da Stream: ");
+                fgets(nome, 50, stdin);
+                nome[strcspn(nome, "\n")] = 0;
+                s = buscarStream(raiz, nome);
+                if (s != NULL) {
+                    printf("Digite o nome da Categoria: ");
+                    fgets(nomeCategoria, 30, stdin);
+                    nomeCategoria[strcspn(nomeCategoria, "\n")] = 0;
+                    cat = buscarCategoria(s->categorias, nomeCategoria);
+                    if (cat != NULL) {
+                        printf("Digite a periodicidade (ex: diario, semanal, mensal): ");
+                        fgets(periodicidade, 20, stdin);
+                        periodicidade[strcspn(periodicidade, "\n")] = 0;
+                        printf("\nProgramas da categoria '%s' na stream '%s' com periodicidade '%s':\n", nomeCategoria, nome, periodicidade);
+                        buscarProgramasPorDiaSemana(cat->programas, periodicidade);
+                    } else {
+                        printf("Categoria nao encontrada!\n");
+                    }
+                } else {
+                    printf("Stream nao encontrada!\n");
+                }
+                break;
+            
+            case 17:
+                printf("Digite o nome da Stream para listar os apresentadores: ");
+                fgets(nome, 50, stdin);
+                nome[strcspn(nome, "\n")] = 0;
+                printf("\nApresentadores da stream '%s':\n", nome);
+                mostrarApresentadoresPorStream(listaApresentadores, nome);
+                break;
+
+            case 18:
+                printf("Digite o nome da Categoria para listar os apresentadores: ");
+                fgets(nomeCategoria, 30, stdin);
+                nomeCategoria[strcspn(nomeCategoria, "\n")] = 0;
+                printf("\nApresentadores da categoria '%s':\n", nomeCategoria);
+                mostrarApresentadoresPorCategoria(listaApresentadores, nomeCategoria);
+                break;
+
+            case 19:
+                printf("Digite o nome da Stream: ");
+                fgets(nome, 50, stdin);
+                nome[strcspn(nome, "\n")] = 0;
+                s = buscarStream(raiz, nome);
+                if (s != NULL) {
+                    printf("Digite o nome da Categoria: ");
+                    fgets(nomeCategoria, 30, stdin);
+                    nomeCategoria[strcspn(nomeCategoria, "\n")] = 0;
+                    cat = buscarCategoria(s->categorias, nomeCategoria);
+                    if (cat != NULL) {
+                        printf("Digite o nome do Programa: ");
+                        fgets(nomePrograma, 30, stdin);
+                        nomePrograma[strcspn(nomePrograma, "\n")] = 0;
+                        mostrarDadosPrograma(cat->programas, nomePrograma);
+                    } else {
+                        printf("Categoria nao encontrada!\n");
+                    }
+                } else {
+                    printf("Stream nao encontrada!\n");
+                }
+                break;
+
+            case 20:
+                printf("Digite o nome da Stream: ");
+                fgets(nome, 50, stdin);
+                nome[strcspn(nome, "\n")] = 0;
+                s = buscarStream(raiz, nome);
+                if (s != NULL) {
+                    printf("Digite o nome da Categoria a ser removida: ");
+                    fgets(nomeCategoria, 30, stdin);
+                    nomeCategoria[strcspn(nomeCategoria, "\n")] = 0;
+                    removerCategoria(s, nomeCategoria);
+                } else {
+                    printf("Stream nao encontrada!\n");
+                }
+                break;
+
             case 0:
                 printf("Saindo...\n");
                 break;
@@ -667,3 +948,5 @@ int main() {
 
     return 0;
 }
+
+
