@@ -1,6 +1,5 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#ifndef ARVORE_2_3_H
+#define ARVORE_2_3_H
 
 /*-----------------------------------------------------------
     ESTRUTURAS DE DADOS
@@ -34,7 +33,7 @@ typedef struct no23 {
     struct no23 *meio;
     struct no23 *dir;
     int num_chaves;
-} Arvore23;
+} Arvore23_art;
 
 /*-----------------------------------------------------------
     FUNÇÕES AUXILIARES DE LISTA (MÚSICAS)
@@ -52,43 +51,43 @@ void listarMusicas(Musica *lista);
     FUNÇÕES AUXILIARES DE ÁRVORE 2-3 (ARTISTAS)
 -----------------------------------------------------------*/
 
-int ehFolha(Arvore23 *No);
+int ehFolha(Arvore23_art *No);
 
-void criaNo(Arvore23 **No, Artista info, Arvore23 *esq, Arvore23 *meio);
+void criaNo(Arvore23_art **No, Artista info, Arvore23_art *esq, Arvore23_art *meio);
 
-void adicionaNo(Arvore23 **No, Artista info, Arvore23 *filho);
+void adicionaNo(Arvore23_art **No, Artista info, Arvore23_art *filho);
 
-void quebraNo(Arvore23 **No, Artista info, Artista *sobe, Arvore23 **No_maior, Arvore23 *filho);
+void quebraNo(Arvore23_art **No, Artista info, Artista *sobe, Arvore23_art **No_maior, Arvore23_art *filho);
 
 /*-----------------------------------------------------------
     INSERÇÃO
 -----------------------------------------------------------*/
 
-Arvore23* inserirArtista(Arvore23 *Raiz, Artista novoArtista);
+Arvore23_art* inserirArtista(Arvore23_art *Raiz, Artista novoArtista);
 
-Arvore23* inserirAlbum(Arvore23 *Raiz, char *nomeArtista, Album novoAlbum);
+Arvore23_art* inserirAlbum(Arvore23_art *Raiz, char *nomeArtista, Album novoAlbum);
 
-void inserirMusica(Arvore23 *Raiz, char *nomeArtista, char *tituloAlbum, Musica novaMusica);
+void inserirMusica(Arvore23_art *Raiz, char *nomeArtista, char *tituloAlbum, Musica novaMusica);
 
 /*-----------------------------------------------------------
     BUSCAS
 -----------------------------------------------------------*/
 
-Arvore23* buscarArtista(Arvore23 *Raiz, char *nomeArtista);
+Arvore23_art* buscarArtista(Arvore23_art *Raiz, char *nomeArtista);
 
-Album* buscarAlbum(Arvore23 *Raiz, char *nomeArtista, char *tituloAlbum);
+Album* buscarAlbum(Arvore23_art *Raiz, char *nomeArtista, char *tituloAlbum);
 
-Musica* buscarMusica(Arvore23 *Raiz, char *nomeArtista, char *tituloAlbum, char *tituloMusica);
+Musica* buscarMusica(Arvore23_art *Raiz, char *nomeArtista, char *tituloAlbum, char *tituloMusica);
 
 /*-----------------------------------------------------------
     REMOÇÕES
 -----------------------------------------------------------*/
 
-void removerMusica(Arvore23 *Raiz, char *nomeArtista, char *tituloAlbum, char *tituloMusica);
+void removerMusica(Arvore23_art *Raiz, char *nomeArtista, char *tituloAlbum, char *tituloMusica);
 
-void removerAlbum(Arvore23 *Raiz, char *nomeArtista, char *tituloAlbum);
+void removerAlbum(Arvore23_art *Raiz, char *nomeArtista, char *tituloAlbum);
 
-void removerArtista(Arvore23 **Raiz, char *nomeArtista);
+int removerArtista(Arvore23_art **Raiz, char *nomeArtista);
 
 /*-----------------------------------------------------------
     IMPRESSÕES
@@ -100,18 +99,15 @@ void imprimirAlbum(Album alb);
 
 void imprimirArtista(Artista art);
 
-void imprimirBiblioteca(Arvore23 *Raiz, int nivel);
+void imprimirBiblioteca(Arvore23_art *Raiz, int nivel);
 
 /*-----------------------------------------------------------
     EXPERIMENTO DE BUSCA (30 ARTISTAS)
 -----------------------------------------------------------*/
 
-void experimentoBusca(Arvore23 *Raiz);
+void experimentoBusca(Arvore23_art *Raiz);
 
-/*-----------------------------------------------------------
-    MENU PRINCIPAL
------------------------------------------------------------*/
 
-void menuPrincipal();
 
-int main();
+
+#endif
