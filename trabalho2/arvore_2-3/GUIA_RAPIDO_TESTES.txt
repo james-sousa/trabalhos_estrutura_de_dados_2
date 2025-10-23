@@ -1,0 +1,410 @@
+═══════════════════════════════════════════════════════════════════════════
+  🎯 GUIA PRÁTICO DE TESTES - ÁRVORE 2-3
+═══════════════════════════════════════════════════════════════════════════
+
+⚠️ IMPORTANTE: 
+- Cole UMA LINHA POR VEZ quando o programa pedir
+- Sempre pressione ENTER após cada linha
+- NÃO cole múltiplas linhas de uma vez
+- Observe se o campo está correto antes de colar
+
+═══════════════════════════════════════════════════════════════════════════
+✅ TESTE COMPLETO PASSO A PASSO
+═══════════════════════════════════════════════════════════════════════════
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PASSO 1: INSERIR 6 ARTISTAS (Opção 1)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1.1) Nome: The Beatles | Estilo: Rock
+1.2) Nome: Pink Floyd | Estilo: Rock Progressivo  
+1.3) Nome: Queen | Estilo: Rock
+1.4) Nome: Led Zeppelin | Estilo: Hard Rock
+1.5) Nome: AC/DC | Estilo: Hard Rock
+1.6) Nome: Metallica | Estilo: Heavy Metal
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PASSO 2: INSERIR ÁLBUNS (Opção 3)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+2.1) The Beatles | Abbey Road | 1969
+2.2) The Beatles | Let It Be | 1970
+2.3) Pink Floyd | The Dark Side of the Moon | 1973
+2.4) Pink Floyd | The Wall | 1979
+2.5) Queen | A Night at the Opera | 1975
+2.6) Queen | News of the World | 1977
+2.7) Led Zeppelin | Led Zeppelin IV | 1971
+2.8) AC/DC | Back in Black | 1980
+2.9) Metallica | Master of Puppets | 1986
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PASSO 3: INSERIR MÚSICAS (Opção 5)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎵 ABBEY ROAD (The Beatles):
+────────────────────────────────────────
+The Beatles | Abbey Road | Come Together | 4.20
+The Beatles | Abbey Road | Something | 3.03
+The Beatles | Abbey Road | Here Comes the Sun | 3.05
+The Beatles | Abbey Road | Oh! Darling | 3.27
+The Beatles | Abbey Road | Octopus's Garden | 2.51
+
+🎵 LET IT BE (The Beatles):
+────────────────────────────────────────
+The Beatles | Let It Be | Let It Be | 4.03
+The Beatles | Let It Be | Get Back | 3.14
+The Beatles | Let It Be | The Long and Winding Road | 3.38
+
+🎵 THE DARK SIDE OF THE MOON (Pink Floyd):
+────────────────────────────────────────
+Pink Floyd | The Dark Side of the Moon | Time | 6.53
+Pink Floyd | The Dark Side of the Moon | Money | 6.23
+Pink Floyd | The Dark Side of the Moon | Us and Them | 7.49
+Pink Floyd | The Dark Side of the Moon | Brain Damage | 3.48
+Pink Floyd | The Dark Side of the Moon | Eclipse | 2.03
+
+🎵 THE WALL (Pink Floyd):
+────────────────────────────────────────
+Pink Floyd | The Wall | Another Brick in the Wall | 3.56
+Pink Floyd | The Wall | Comfortably Numb | 6.23
+Pink Floyd | The Wall | Hey You | 4.40
+
+🎵 A NIGHT AT THE OPERA (Queen):
+────────────────────────────────────────
+Queen | A Night at the Opera | Bohemian Rhapsody | 5.55
+Queen | A Night at the Opera | Love of My Life | 3.38
+Queen | A Night at the Opera | You're My Best Friend | 2.50
+
+🎵 NEWS OF THE WORLD (Queen):
+────────────────────────────────────────
+Queen | News of the World | We Will Rock You | 2.02
+Queen | News of the World | We Are the Champions | 2.59
+Queen | News of the World | Spread Your Wings | 4.34
+
+🎵 LED ZEPPELIN IV:
+────────────────────────────────────────
+Led Zeppelin | Led Zeppelin IV | Stairway to Heaven | 8.02
+Led Zeppelin | Led Zeppelin IV | Black Dog | 4.54
+Led Zeppelin | Led Zeppelin IV | Rock and Roll | 3.40
+
+🎵 BACK IN BLACK (AC/DC):
+────────────────────────────────────────
+AC/DC | Back in Black | Back in Black | 4.15
+AC/DC | Back in Black | Hells Bells | 5.12
+AC/DC | Back in Black | You Shook Me All Night Long | 3.30
+
+🎵 MASTER OF PUPPETS (Metallica):
+────────────────────────────────────────
+Metallica | Master of Puppets | Master of Puppets | 8.36
+Metallica | Master of Puppets | Battery | 5.13
+Metallica | Master of Puppets | Welcome Home | 6.27
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PASSO 4: TESTES DE BUSCA
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+4.1) BUSCAR ARTISTA (Opção 7):
+─────────────────────────────────────────
+Queen
+
+✅ Resultado esperado: 
+   Artista: Queen
+   Estilo: Rock
+   Quantidade de álbuns: 2
+
+4.2) BUSCAR ÁLBUM (Opção 8):
+─────────────────────────────────────────
+The Beatles
+Abbey Road
+
+✅ Resultado esperado: Mostrar 5 músicas em ordem alfabética
+
+4.3) BUSCAR MÚSICA (Opção 9) - SUCESSO:
+─────────────────────────────────────────
+Queen
+A Night at the Opera
+Bohemian Rhapsody
+
+✅ Resultado esperado: Música encontrada! (5.55 min)
+
+4.4) BUSCAR MÚSICA (Opção 9) - FALHA:
+─────────────────────────────────────────
+The Beatles
+Abbey Road
+Yesterday
+
+❌ Resultado esperado: Música não encontrada!
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PASSO 5: TESTES DE REMOÇÃO
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+5.1) REMOVER MÚSICA (Opção 6):
+─────────────────────────────────────────
+The Beatles
+Abbey Road
+Something
+
+✅ Depois, buscar o álbum Abbey Road - deve ter 4 músicas
+
+5.2) REMOVER ÁLBUM (Opção 4):
+─────────────────────────────────────────
+Pink Floyd
+The Wall
+
+✅ Aviso: Todas as músicas serão removidas
+✅ Depois, buscar o álbum - não deve encontrar
+
+5.3) REMOVER ARTISTA (Opção 2):
+─────────────────────────────────────────
+Bob Dylan
+
+✅ Aviso: Todos os álbuns e músicas serão removidos
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PASSO 6: VISUALIZAÇÕES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+6.1) LISTAR ARTISTAS (Opção 10):
+✅ Devem aparecer em ordem alfabética
+
+6.2) HIERARQUIA DA ÁRVORE (Opção 11):
+✅ Ver estrutura balanceada da árvore 2-3
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PASSO 7: EXPERIMENTO COM 30 ARTISTAS (Opção 12)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+PRIMEIRO: Inserir 30 artistas (Opção 1):
+
+1. Adele | Pop
+2. Arctic Monkeys | Indie Rock
+3. Beatles | Rock
+4. Beyonce | R&B
+5. Billie Eilish | Pop
+6. Bob Marley | Reggae
+7. Bruno Mars | Pop
+8. Coldplay | Alternative Rock
+9. David Bowie | Rock
+10. Dua Lipa | Pop
+11. Ed Sheeran | Pop
+12. Elton John | Pop Rock
+13. Eminem | Hip Hop
+14. Foo Fighters | Rock
+15. Frank Sinatra | Jazz
+16. Guns N Roses | Hard Rock
+17. Imagine Dragons | Pop Rock
+18. Iron Maiden | Heavy Metal
+19. Jay-Z | Hip Hop
+20. Jimi Hendrix | Rock
+21. John Mayer | Blues Rock
+22. Justin Timberlake | Pop
+23. Kanye West | Hip Hop
+24. Kendrick Lamar | Hip Hop
+25. Lady Gaga | Pop
+26. Madonna | Pop
+27. Maroon 5 | Pop Rock
+28. Nirvana | Grunge
+29. Radiohead | Alternative Rock
+30. Taylor Swift | Pop
+
+DEPOIS: Executar o experimento (Opção 12) e digitar os nomes:
+────────────────────────────────────────────────────────────────
+
+Adele
+Arctic Monkeys
+Beatles
+Beyonce
+Billie Eilish
+Bob Marley
+Bruno Mars
+Coldplay
+David Bowie
+Dua Lipa
+Ed Sheeran
+Elton John
+Eminem
+Foo Fighters
+Frank Sinatra
+Guns N Roses
+Imagine Dragons
+Iron Maiden
+Jay-Z
+Jimi Hendrix
+John Mayer
+Justin Timberlake
+Kanye West
+Kendrick Lamar
+Lady Gaga
+Madonna
+Maroon 5
+Nirvana
+Radiohead
+Taylor Swift
+
+✅ Resultado esperado:
+   - Taxa de sucesso: 100%
+   - Tempo médio: < 1ms
+   - Caminho percorrido mostrado para cada busca
+
+═══════════════════════════════════════════════════════════════════════════
+📝 DADOS SEPARADOS POR LINHA (PARA COPIAR/COLAR)
+═══════════════════════════════════════════════════════════════════════════
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+INSERIR ARTISTA (OPÇÃO 1) - Cole linha por linha:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+The Beatles
+Rock
+
+Pink Floyd
+Rock Progressivo
+
+Queen
+Rock
+
+Led Zeppelin
+Hard Rock
+
+AC/DC
+Hard Rock
+
+Metallica
+Heavy Metal
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+INSERIR ÁLBUM (OPÇÃO 3) - Cole linha por linha:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+The Beatles
+Abbey Road
+1969
+
+The Beatles
+Let It Be
+1970
+
+Pink Floyd
+The Dark Side of the Moon
+1973
+
+Pink Floyd
+The Wall
+1979
+
+Queen
+A Night at the Opera
+1975
+
+Queen
+News of the World
+1977
+
+Led Zeppelin
+Led Zeppelin IV
+1971
+
+AC/DC
+Back in Black
+1980
+
+Metallica
+Master of Puppets
+1986
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+INSERIR MÚSICA (OPÇÃO 5) - Cole linha por linha:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+The Beatles
+Abbey Road
+Come Together
+4.20
+
+The Beatles
+Abbey Road
+Something
+3.03
+
+The Beatles
+Abbey Road
+Here Comes the Sun
+3.05
+
+The Beatles
+Let It Be
+Let It Be
+4.03
+
+Pink Floyd
+The Dark Side of the Moon
+Time
+6.53
+
+Pink Floyd
+The Dark Side of the Moon
+Money
+6.23
+
+Pink Floyd
+The Wall
+Another Brick in the Wall
+3.56
+
+Queen
+A Night at the Opera
+Bohemian Rhapsody
+5.55
+
+Queen
+News of the World
+We Will Rock You
+2.02
+
+Led Zeppelin
+Led Zeppelin IV
+Stairway to Heaven
+8.02
+
+AC/DC
+Back in Black
+Back in Black
+4.15
+
+Metallica
+Master of Puppets
+Master of Puppets
+8.36
+
+═══════════════════════════════════════════════════════════════════════════
+💡 DICAS IMPORTANTES
+═══════════════════════════════════════════════════════════════════════════
+
+1. ⚠️ NUNCA cole múltiplas linhas de uma vez
+2. ✅ Sempre cole UMA linha e pressione ENTER
+3. ✅ Observe qual campo o programa está pedindo
+4. ✅ Para músicas, use ponto decimal (ex: 3.05)
+5. ✅ Teste opção 10 frequentemente para ver os artistas ordenados
+6. ✅ Teste opção 11 para ver a estrutura da árvore
+
+═══════════════════════════════════════════════════════════════════════════
+✅ CHECKLIST DE TESTES
+═══════════════════════════════════════════════════════════════════════════
+
+□ Inserir 6 artistas
+□ Inserir 9 álbuns
+□ Inserir pelo menos 12 músicas
+□ Buscar artista existente
+□ Buscar álbum e verificar músicas ordenadas
+□ Buscar música existente
+□ Buscar música inexistente (teste de falha)
+□ Remover uma música
+□ Remover um álbum
+□ Remover um artista
+□ Listar artistas em ordem alfabética
+□ Visualizar hierarquia da árvore
+□ Inserir 30 artistas para o experimento
+□ Executar experimento de busca
+□ Verificar taxa de sucesso 100%
+
+═══════════════════════════════════════════════════════════════════════════
+                            FIM DO GUIA
+═══════════════════════════════════════════════════════════════════════════

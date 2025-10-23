@@ -75,6 +75,8 @@ void inserirMusica(Arvore23_art *Raiz, char *nomeArtista, char *tituloAlbum, Mus
 
 Arvore23_art* buscarArtista(Arvore23_art *Raiz, char *nomeArtista);
 
+Arvore23_art* buscarAlbumNoArvore(Arvore23_art *raiz, char *tituloAlbum, Album *resultado);
+
 Album* buscarAlbum(Arvore23_art *Raiz, char *nomeArtista, char *tituloAlbum);
 
 Musica* buscarMusica(Arvore23_art *Raiz, char *nomeArtista, char *tituloAlbum, char *tituloMusica);
@@ -102,12 +104,25 @@ void imprimirArtista(Artista art);
 void imprimirBiblioteca(Arvore23_art *Raiz, int nivel);
 
 /*-----------------------------------------------------------
+    FUNÇÕES AUXILIARES DE ÁRVORE 2-3 (ÁLBUNS)
+-----------------------------------------------------------*/
+
+int ehFolhaAlbum(Arvore23_art *No);
+
+Arvore23_art* inserirRecAlbum(Arvore23_art *No, Album info, Album *sobe, Arvore23_art **novo);
+
+Arvore23_art* removerRecAlbum(Arvore23_art **raiz, char *tituloAlbum);
+
+/*-----------------------------------------------------------
     EXPERIMENTO DE BUSCA (30 ARTISTAS)
 -----------------------------------------------------------*/
 
 void experimentoBusca(Arvore23_art *Raiz);
 
+/*-----------------------------------------------------------
+    IMPRESSÃO EM ORDEM
+-----------------------------------------------------------*/
 
-
+void imprimirInOrder(Arvore23_art *Raiz);
 
 #endif
