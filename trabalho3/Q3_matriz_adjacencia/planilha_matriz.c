@@ -2,439 +2,500 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-#include <math.h>
-// Ultima alteracao: 20/11 
+
 #define COLUNAS 8
 #define LINHAS 20
-#define N_CELULAS (COLUNAS * LINHAS)
-#define MAX_EXPR 128
-#define INF 1000000000
+#define MAX_CELULAS (COLUNAS * LINHAS)
+#define MAX_FORMULA 100
 
-typedef enum {TC_VAZIA, TC_NUMERO, TC_REF, TC_FUNC} TipoCelula;
-typedef enum {TF_SOMA, TF_MAX, TF_MIN, TF_MEDIA, TF_DESCONHECIDA} TipoFuncao;
+typedef enum {
+    NUMERO,
+    REFERENCIA,
+    FORMULA_SOMA,
+    FORMULA_MAX,
+    FORMULA_MIN,
+    FORMULA_MEDIA,
+    VAZIO
+} TipoCelula;
 
 typedef struct {
     TipoCelula tipo;
-    char expr[MAX_EXPR]; 
-    double numero;         
-    int refIndex;          
-    TipoFuncao func;         
-    int deps[N_CELULAS];     
-    int depsCont;
-} Cell;
+    double valor;
+    char formula[MAX_FORMULA];
+    int calculado;
+} Celula;
 
-int grafo[N_CELULAS][N_CELULAS]; 
-Cell planilha[N_CELULAS];
+typedef struct{
+    int matriz[MAX_CELULAS][MAX_CELULAS];
+    Celula celulas[MAX_CELULAS];
+    int num_vertices;
+}Grafo;
 
-int colCharParaIndice(char c) {
-    c = toupper((unsigned char)c);
-    if (c < 'A' || c > 'H') return -1;
-    return c - 'A';
+// Converter coordenada para índice
+int coordenadaParaIndice(char coluna, int linha) {
+    if (coluna < 'A' || coluna > 'H' || linha < 1 || linha > 20) {
+        return -1;
+    }
+    return (linha - 1) * COLUNAS + (coluna - 'A');
 }
-int obterCelulaNome(const char *s) {
-    if (!s || !isalpha((unsigned char)s[0])) return -1;
-    int col = colCharParaIndice(s[0]);
-    if (col < 0) return -1;
-    int linha = 0;
-    int i = 1;
-    while (s[i] && isdigit((unsigned char)s[i])) {
-        linha = linha * 10 + (s[i] - '0');
+
+// Converter índice para coordenada
+void indiceParaCoordenada(int indice, char *coluna, int *linha) {
+    *coluna = 'A' + (indice % COLUNAS);
+    *linha = (indice / COLUNAS) + 1;
+}
+
+// Inicializar grafo
+void inicializarGrafo(Grafo *g){
+    g->num_vertices = MAX_CELULAS;
+    for (int i = 0; i < MAX_CELULAS; i++)
+    {
+        for (int j = 0; j < MAX_CELULAS; j++)
+        {
+            g->matriz[i][j] = 0;
+        }
+        g->celulas[i].tipo = VAZIO;
+        g->celulas[i].valor = 0.0;
+        g->celulas[i].formula[0] = '\0';
+        g->celulas[i].calculado = 1;
+    }
+}
+
+// Verificar se é um número
+int ehNumero(const char *str) {
+    if (str[0] == '\0') return 0;
+    
+    int i = 0;
+    if (str[0] == '-' || str[0] == '+') i = 1;
+    
+    int temPonto = 0;
+    for (; str[i] != '\0'; i++) {
+        if (str[i] == '.' && !temPonto) {
+            temPonto = 1;
+        } else if (str[i] < '0' || str[i] > '9') {
+            return 0;
+        }
+    }
+    return 1;
+}
+
+// Converter string para double
+double stringParaDouble(const char *str) {
+    double resultado = 0.0;
+    double fator = 1.0;
+    int negativo = 0;
+    int i = 0;
+    
+    if (str[0] == '-') {
+        negativo = 1;
+        i = 1;
+    } else if (str[0] == '+') {
+        i = 1;
+    }
+    
+    while (str[i] != '\0' && str[i] != '.') {
+        resultado = resultado * 10 + (str[i] - '0');
         i++;
     }
-    if (linha < 1 || linha > LINHAS) return -1;
-    return col * LINHAS + (linha - 1);
-}
-void indiceParaCelulaNome(int idx, char *saida) {
-    int col = idx / LINHAS;
-    int linha = (idx % LINHAS) + 1;
-    sprintf(saida, "%c%d", 'A' + col, linha);
-}
-
-
-void inicializaPlanilha() {
-    for (int i = 0; i < N_CELULAS; i++) {
-        planilha[i].tipo = TC_VAZIA;
-        planilha[i].expr[0] = '\0';
-        planilha[i].numero = 0.0;
-        planilha[i].refIndex = -1;
-        planilha[i].func = TF_DESCONHECIDA;
-        planilha[i].depsCont = 0;
-    }
-    for (int i = 0; i < N_CELULAS; i++)
-        for (int j = 0; j < N_CELULAS; j++)
-            grafo[i][j] = 0;
-}
-
-void atualizaGrafoCelula(int to) {
-    for (int u = 0; u < N_CELULAS; u++) grafo[u][to] = 0;
-    for (int k = 0; k < planilha[to].depsCont; k++) {
-        int u = planilha[to].deps[k];
-        if (u >= 0 && u < N_CELULAS) grafo[u][to] = 1;
-    }
-}
-
-void adicionaDependencia(int destino, int dep) {
-    if (dep < 0 || dep >= N_CELULAS) return;
-    for (int k = 0; k < planilha[destino].depsCont; k++)
-        if (planilha[destino].deps[k] == dep) return;
-    planilha[destino].deps[planilha[destino].depsCont++] = dep;
-}
-
-TipoFuncao obterFuncaoNome(const char *s) {
-    if (strcasecmp(s, "soma") == 0) return TF_SOMA;
-    if (strcasecmp(s, "max") == 0) return TF_MAX;
-    if (strcasecmp(s, "min") == 0) return TF_MIN;
-    if (strcasecmp(s, "media") == 0 || strcasecmp(s, "média") == 0) return TF_MEDIA;
-    return TF_DESCONHECIDA;
-}
-
-void LimparDependencias(int idx) {
-    planilha[idx].depsCont = 0;
-    planilha[idx].refIndex = -1;
-    planilha[idx].func = TF_DESCONHECIDA;
-}
-
-int adicionaDependenciaIntervalo(int destino, const char *nomeInicio, const char *nomeFim) {
-    int idxInicio = obterCelulaNome(nomeInicio);
-    int idxFim = obterCelulaNome(nomeFim);
-    if (idxInicio < 0 || idxFim < 0) return 0;
-    int colInicio = idxInicio / LINHAS, linhaInicio = idxInicio % LINHAS;
-    int colFim = idxFim / LINHAS, linhaFim = idxFim % LINHAS;
-    if (colInicio > colFim) { int t = colInicio; colInicio = colFim; colFim = t; }
-    if (linhaInicio > linhaFim) { int t = linhaInicio; linhaInicio = linhaFim; linhaFim = t; }
-    for (int c = colInicio; c <= colFim; c++) {
-        for (int l = linhaInicio; l <= linhaFim; l++) {
-            int dep = c * LINHAS + l;
-            adicionaDependencia(destino, dep);
+    
+    if (str[i] == '.') {
+        i++;
+        while (str[i] != '\0') {
+            fator /= 10.0;
+            resultado += (str[i] - '0') * fator;
+            i++;
         }
     }
-    return 1;
+    
+    return negativo ? -resultado : resultado;
 }
 
-void removerEspacos(char *s) {
-    int i = 0;
-    while (s[i] && isspace((unsigned char)s[i])) i++;
-    if (i) memmove(s, s + i, strlen(s + i) + 1);
-    int len = strlen(s);
-    while (len > 0 && isspace((unsigned char)s[len - 1])) s[--len] = '\0';
-}
-
-int processarLinhaEntrada(const char *linha) {
-    char buf[MAX_EXPR];
-    strncpy(buf, linha, MAX_EXPR - 1);
-    buf[MAX_EXPR - 1] = '\0';
-    removerEspacos(buf);
-    if (strlen(buf) == 0) return 0;
-    // comandos usados: print, exit, help
-    if (strcasecmp(buf, "print") == 0) return -1; // sinal para imprimir
-    if (strcasecmp(buf, "sair") == 0) return -2;  // sair
-    if (strcasecmp(buf, "ajuda") == 0) return -3;  // ajuda
-
-    char token1[32] = {0};
-    char rest[MAX_EXPR] = {0};
-    int idx = 0;
-
-    while (buf[idx] && !isspace((unsigned char)buf[idx]) && idx < (int)sizeof(token1)-1) {
-        token1[idx] = buf[idx];
-        idx++;
-    }
-    token1[idx] = '\0';
-    while (buf[idx] && isspace((unsigned char)buf[idx])) idx++;
-    strncpy(rest, buf + idx, MAX_EXPR - 1);
-    rest[MAX_EXPR - 1] = '\0';
-    removerEspacos(token1); removerEspacos(rest);
-    if (strlen(token1) == 0) {
-        printf("Entrada inválida. Formato: A1 10 | B2 =C3 | C1 @soma(A1..B2)\n");
-        return 0;
-    }
-    int celulaIndice = obterCelulaNome(token1);
-    if (celulaIndice < 0) {
-        printf("Nome de célula inválido: %s\n", token1);
-        return 0;
-    }
-    strncpy(planilha[celulaIndice].expr, rest, MAX_EXPR - 1);
-    planilha[celulaIndice].expr[MAX_EXPR - 1] = '\0';
-    LimparDependencias(celulaIndice);
-
-    if (strlen(rest) == 0) {
-        planilha[celulaIndice].tipo = TC_VAZIA;
-        planilha[celulaIndice].numero = 0.0;
-    } else if (rest[0] == '=') {
-        const char *refNome = rest + 1;
-        removerEspacos((char*)refNome); 
-        int r = obterCelulaNome(refNome);
-        if (r < 0) {
-            printf("Referência inválida: %s\n", refNome);
-            planilha[celulaIndice].tipo = TC_VAZIA;
-            planilha[celulaIndice].numero = 0.0;
-        } else {
-            planilha[celulaIndice].tipo = TC_REF;
-            planilha[celulaIndice].refIndex = r;
-            adicionaDependencia(celulaIndice, r);
-        }
-    } else if (rest[0] == '@') {
-        char tmp[MAX_EXPR];
-        strncpy(tmp, rest + 1, MAX_EXPR - 2);
-        tmp[MAX_EXPR - 2] = '\0';
-        char *abre = strchr(tmp, '(');
-        char *fecha = strchr(tmp, ')');
-        if (!abre || !fecha || abre > fecha) {
-            printf("Função inválida: sintaxe errada\n");
-            planilha[celulaIndice].tipo = TC_VAZIA;
-            planilha[celulaIndice].numero = 0.0;
-        } else {
-            *abre = '\0';
-            char *nomeFuncao = tmp;
-            char argstr[MAX_EXPR];
-            strncpy(argstr, abre + 1, (fecha - (abre + 1)));
-            argstr[fecha - (abre + 1)] = '\0';
-            removerEspacos(nomeFuncao); removerEspacos(argstr);
-            TipoFuncao ft = obterFuncaoNome(nomeFuncao);
-            if (ft == TF_DESCONHECIDA) {
-                printf("Função desconhecida: %s\n", nomeFuncao);
-                planilha[celulaIndice].tipo = TC_VAZIA;
-                planilha[celulaIndice].numero = 0.0;
-            } else {
-                char *pontos = strstr(argstr, "..");
-                if (!pontos) {
-                    printf("Função inválida: intervalo esperado A1..B2\n");
-                    planilha[celulaIndice].tipo = TC_VAZIA;
-                    planilha[celulaIndice].numero = 0.0;
-                } else {
-                    char nomeInicio[16], nomeFim[16];
-                    int l1 = pontos - argstr;
-                    strncpy(nomeInicio, argstr, l1);
-                    nomeInicio[l1] = '\0';
-                    strcpy(nomeFim, pontos + 2);
-                    removerEspacos(nomeInicio); removerEspacos(nomeFim);
-                    if (!adicionaDependenciaIntervalo(celulaIndice, nomeInicio, nomeFim)) {
-                        printf("Intervalo inválido: %s..%s\n", nomeInicio, nomeFim);
-                        planilha[celulaIndice].tipo = TC_VAZIA;
-                        planilha[celulaIndice].numero = 0.0;
-                    } else {
-                        planilha[celulaIndice].tipo = TC_FUNC;
-                        planilha[celulaIndice].func = ft;
-                    }
-                }
-            }
-        }
-    } else {
-        char *endptr = NULL;
-        double v = strtod(rest, &endptr);
-        if (endptr == rest || *endptr != '\0') {
-            
-            printf("Valor inválido: %s\n", rest);
-            planilha[celulaIndice].tipo = TC_VAZIA;
-            planilha[celulaIndice].numero = 0.0;
-        } else {
-            planilha[celulaIndice].tipo = TC_NUMERO;
-            planilha[celulaIndice].numero = v;
-        }
-    }
-
-    atualizaGrafoCelula(celulaIndice);
-    return 1;
-}
-
-int estado[N_CELULAS]; 
-double memo[N_CELULAS];
-int memoValida[N_CELULAS];
-int CicloDetectado = 0;
-
-double avaliarCelula(int idx);
-
-double avaliarFuncao(int idx) {
-    // Se não há dependências, retorna 0
-    if (planilha[idx].depsCont == 0) return 0.0;
-
-    double result = 0.0;
-    int contValidos = 0;  // contador de células não vazias
-
-    // Inicializações conforme o tipo de função
-    if (planilha[idx].func == TF_SOMA || planilha[idx].func == TF_MEDIA) result = 0.0;
-    if (planilha[idx].func == TF_MAX) result = -INFINITY;
-    if (planilha[idx].func == TF_MIN) result = INFINITY;
-
-    // Percorrer dependências
-    for (int k = 0; k < planilha[idx].depsCont; k++) {
-        int dep = planilha[idx].deps[k];
-
-        // Pular células vazias para MIN, MAX e AVG
-        if (planilha[dep].tipo == TC_VAZIA &&
-            (planilha[idx].func == TF_MIN || 
-             planilha[idx].func == TF_MAX || 
-             planilha[idx].func == TF_MEDIA)) 
-        {
-            continue;
-        }
-
-        double v = avaliarCelula(dep);
-        if (CicloDetectado) return 0.0;
-
-        if (planilha[idx].func == TF_SOMA || planilha[idx].func == TF_MEDIA) {
-            result += v;
-            if (planilha[dep].tipo != TC_VAZIA) 
-                contValidos++;   // conta apenas valores válidos para média
-        }
-        else if (planilha[idx].func == TF_MAX) {
-            if (v > result) result = v;
-            contValidos++;
-        }
-        else if (planilha[idx].func == TF_MIN) {
-            if (v < result) result = v;
-            contValidos++;
-        }
-    }
-
-    // Cálculo da média
-    if (planilha[idx].func == TF_MEDIA) {
-        if (contValidos > 0)
-            result = result / (double)contValidos;
-        else
-            result = 0.0;
-    }
-
-    // Se MIN/MAX não tiveram valores válidos, retorna 0
-    if ((planilha[idx].func == TF_MIN || planilha[idx].func == TF_MAX) &&
-        contValidos == 0) 
+int verticeExiste(int v, int numV){
+    if (v >= 0 && v < numV)
     {
-        result = 0.0;
+        return 1;
     }
-
-    return result;
+    
+    return 0;
+    
 }
 
-double avaliarCelula(int idx) {
-    if (idx < 0 || idx >= N_CELULAS) return 0.0;
-    if (memoValida[idx]) return memo[idx];
-    if (estado[idx] == 1) {
-        CicloDetectado = 1;
-        return 0.0;
-    }
-    if (estado[idx] == 2) {
-        return memo[idx];
-    }
-    estado[idx] = 1; 
-    double val = 0.0;
-    switch (planilha[idx].tipo) {
-        case TC_VAZIA:
-            val = 0.0 ; 
-            break;
-        case TC_NUMERO:
-            val = planilha[idx].numero;
-            break;
-        case TC_REF:
-            if (planilha[idx].refIndex >= 0 && planilha[idx].refIndex < N_CELULAS) {
-                val = avaliarCelula(planilha[idx].refIndex);
-            } else val = 0.0;
-            break;
-        case TC_FUNC:
-            val = avaliarFuncao(idx);
-            break;
-        default:
-            val = 0.0;
-    }
-    estado[idx] = 2; 
-    memo[idx] = val;
-    memoValida[idx] = 1;
-    return val;
-}
-
-void avaliarTudo() {
-    for (int i = 0; i < N_CELULAS; i++) {
-        estado[i] = 0;
-        memoValida[i] = 0;
-        memo[i] = 0.0;
-    }
-    CicloDetectado = 0;
-    for (int i = 0; i < N_CELULAS; i++) {
-        if (!memoValida[i]) {
-            avaliarCelula(i);
-            if (CicloDetectado) break;
-        }
+// Adicionar aresta (direcionada) - vértice v1 conectado ao vértice v2
+void adicionarAresta(Grafo *g, int v1, int v2){
+    if (verticeExiste(v1, g->num_vertices) && verticeExiste(v2, g->num_vertices))
+    {
+        g->matriz[v1][v2] = 1;  // v1 conectado a v2
     }
 }
 
-void imprimirValor(double valor) {
-    double parteInteira;
-    if (modf(valor, &parteInteira) == 0.0) {
-        printf("%.0f", valor);
-    } else {
-        printf("%.2f", valor);
+
+void removerAresta(Grafo *g, int v1, int v2){
+    if (verticeExiste(v1, g->num_vertices) && verticeExiste(v2, g->num_vertices))
+    {
+        g->matriz[v1][v2] = 0;
     }
 }
 
-void imprimirPlanilha() {
-    avaliarTudo();
-    if (CicloDetectado) {
-        printf("ERRO: dependência circular detectada! Avaliação interrompida.\n");
-        
-    }
-    printf("\n     ");
-    for (int c = 0; c < COLUNAS; c++) {
-        printf("   %2.2c    ", 'A' + c);  
+// Declarações forward
+double calcularCelula(Grafo *g, int indice);
+void definirCelula(Grafo *g, char coluna, int linha, const char *valor);
+
+void exibirMatriz(Grafo *g){
+    printf("\n=== PLANILHA ===\n");
+    printf("    ");
+    for (char c = 'A'; c <= 'H'; c++) {
+        printf("%8c", c);
     }
     printf("\n");
-    for (int l = 0; l < LINHAS; l++) {
-        printf("%2d |", l + 1);
-        for (int c = 0; c < COLUNAS; c++) {
-            int indice = c * LINHAS + l;
-            double valor = memoValida[indice] ? memo[indice] : 0.0;
-            printf(" ");
-            char buf[32];
-            {
-                double parteInteira;
-                if (modf(valor, &parteInteira) == 0.0) sprintf(buf, "%.0f", valor);
-                else sprintf(buf, "%.2f", valor);
+    
+    // Recalcula todas as células
+    for (int i = 0; i < MAX_CELULAS; i++) {
+        calcularCelula(g, i);
+    }
+    
+    for (int linha = 1; linha <= LINHAS; linha++) {
+        printf("%2d: ", linha);
+        for (char coluna = 'A'; coluna <= 'H'; coluna++) {
+            int indice = coordenadaParaIndice(coluna, linha);
+            Celula *cel = &g->celulas[indice];
+            
+            if (cel->tipo == VAZIO) {
+                printf("%8s", "-");
+            } else {
+                printf("%8.2f", cel->valor);
             }
-            printf("%6s", buf);
-            printf(" ");
-            printf("|");
         }
         printf("\n");
     }
     printf("\n");
 }
 
-void imprimeAjuda() {
-    printf("Comandos/entradas válidas:\n");
-    printf("  A1 10                -> escreve número 10 na célula A1\n");
-    printf("  D1 =A1               -> D1 referencia diretamente A1\n");
-    printf("  C1 @soma(A1..B2)     -> função soma do intervalo A1..B2\n");
-    printf("  Funções suportadas: @soma, @max, @min, @media\n");
-    printf("  print                -> exibe a planilha atual\n");
-    printf("  sair                 -> sai\n");
-    printf("  ajuda                 -> mostra esta ajuda\n");
-}
-
-
-int main() {
-    inicializaPlanilha();
-    char linha[256];
-    printf("Planilha simples (A..H x 1..20) com grafo de dependencias (matriz de adjacencia).\n");
-    printf("Digite 'ajuda' para instrucoes, 'print' para mostrar planilha, 'sair' para encerrar.\n");
-    while (1) {
-        printf("\n> ");
-        if (!fgets(linha, sizeof(linha), stdin)) break;
-        linha[strcspn(linha, "\n")] = '\0';
-        removerEspacos(linha);
-        if (strlen(linha) == 0) continue;
-        int res = processarLinhaEntrada(linha);
-        if (res == -2) { 
-            printf("Saindo...\n");
-            break;
-        } else if (res == -1) { 
-            imprimirPlanilha();
-        } else if (res == -3) {
-            imprimeAjuda();
-        } else if (res == 1) {
-            avaliarTudo();
-            if (CicloDetectado) {
-                printf("ALERTA: dependência circular detectada. Corrija as células envolvidas.\n");
+// Exibir arestas do grafo (Matriz de Adjacências)
+void exibirDependencias(Grafo *g) {
+    printf("\n=== ESTRUTURA DO GRAFO (Matriz de Adjacencias) ===\n");
+    printf("Mostrando vertices com arestas:\n\n");
+    
+    for (int i = 0; i < MAX_CELULAS; i++) {
+        int temAresta = 0;
+        for (int j = 0; j < MAX_CELULAS; j++) {
+            if (g->matriz[i][j] == 1) {
+                temAresta = 1;
+                break;
             }
-            printf("Célula atualizada: %s\n", linha);
-        } else {
+        }
+        
+        if (temAresta) {
+            char colOrigem, colDestino;
+            int linOrigem, linDestino;
+            indiceParaCoordenada(i, &colOrigem, &linOrigem);
+            
+            printf("Vertice %c%d conectado por arestas a: ", colOrigem, linOrigem);
+            for (int j = 0; j < MAX_CELULAS; j++) {
+                if (g->matriz[i][j] == 1) {
+                    indiceParaCoordenada(j, &colDestino, &linDestino);
+                    printf("%c%d ", colDestino, linDestino);
+                }
+            }
+            printf("\n");
         }
     }
+    printf("\n");
+}
+
+// Calcular valor de uma célula com base em sua fórmula
+double calcularCelula(Grafo *g, int indice) {
+    if (indice < 0 || indice >= MAX_CELULAS) return 0.0;
+    
+    Celula *cel = &g->celulas[indice];
+    
+    if (cel->calculado && cel->tipo != VAZIO) {
+        return cel->valor;
+    }
+    
+    switch (cel->tipo) {
+        case NUMERO:
+            cel->calculado = 1;
+            return cel->valor;
+            
+        case REFERENCIA: {
+            char coluna = cel->formula[1];
+            int linha = 0;
+            for (int i = 2; cel->formula[i] != '\0'; i++) {
+                linha = linha * 10 + (cel->formula[i] - '0');
+            }
+            int indiceRef = coordenadaParaIndice(coluna, linha);
+            if (indiceRef >= 0) {
+                cel->valor = calcularCelula(g, indiceRef);
+            }
+            cel->calculado = 1;
+            return cel->valor;
+        }
+        
+        case FORMULA_SOMA:
+        case FORMULA_MAX:
+        case FORMULA_MIN:
+        case FORMULA_MEDIA: {
+            char *inicio = cel->formula;
+            while (*inicio != '(' && *inicio != '\0') inicio++;
+            if (*inicio == '\0') return 0.0;
+            inicio++;
+            
+            char col1 = inicio[0];
+            int lin1 = 0, i = 1;
+            while (inicio[i] != '.' && inicio[i] != '\0') {
+                lin1 = lin1 * 10 + (inicio[i] - '0');
+                i++;
+            }
+            
+            i += 2;
+            
+            char col2 = inicio[i];
+            int lin2 = 0;
+            i++;
+            while (inicio[i] != ')' && inicio[i] != '\0') {
+                lin2 = lin2 * 10 + (inicio[i] - '0');
+                i++;
+            }
+            
+            double resultado = 0.0;
+            int contador = 0;
+            double max_val = -999999.0;
+            double min_val = 999999.0;
+            
+            for (char c = col1; c <= col2; c++) {
+                for (int l = lin1; l <= lin2; l++) {
+                    int idx = coordenadaParaIndice(c, l);
+                    if (idx >= 0 && idx != indice) {
+                        // Ignorar células vazias
+                        if (g->celulas[idx].tipo == VAZIO) {
+                            continue;
+                        }
+                        
+                        double val = calcularCelula(g, idx);
+                        contador++;
+                        
+                        switch (cel->tipo) {
+                            case FORMULA_SOMA:
+                                resultado += val;
+                                break;
+                            case FORMULA_MAX:
+                                if (contador == 1 || val > max_val) max_val = val;
+                                break;
+                            case FORMULA_MIN:
+                                if (contador == 1 || val < min_val) min_val = val;
+                                break;
+                            case FORMULA_MEDIA:
+                                resultado += val;
+                                break;
+                        }
+                    }
+                }
+            }
+            
+            if (cel->tipo == FORMULA_MEDIA && contador > 0) {
+                resultado /= contador;
+            } else if (cel->tipo == FORMULA_MAX) {
+                resultado = max_val;
+            } else if (cel->tipo == FORMULA_MIN) {
+                resultado = min_val;
+            }
+            
+            cel->valor = resultado;
+            cel->calculado = 1;
+            return resultado;
+        }
+        
+        case VAZIO:
+        default:
+            return 0.0;
+    }
+}
+
+// Definir valor de uma célula
+void definirCelula(Grafo *g, char coluna, int linha, const char *valor) {
+    int indice = coordenadaParaIndice(coluna, linha);
+    if (indice < 0) {
+        printf("Coordenada invalida: %c%d\n", coluna, linha);
+        return;
+    }
+    
+    Celula *cel = &g->celulas[indice];
+    
+    // Limpar dependências antigas
+    for (int i = 0; i < MAX_CELULAS; i++) {
+        removerAresta(g, indice, i);
+    }
+    
+    // Marcar para recalcular
+    for (int i = 0; i < MAX_CELULAS; i++) {
+        if (g->celulas[i].tipo != NUMERO && g->celulas[i].tipo != VAZIO) {
+            g->celulas[i].calculado = 0;
+        }
+    }
+    
+    if (ehNumero(valor)) {
+        cel->tipo = NUMERO;
+        cel->valor = stringParaDouble(valor);
+        cel->calculado = 1;
+        cel->formula[0] = '\0';
+        
+    } else if (valor[0] == '=') {
+        cel->tipo = REFERENCIA;
+        cel->calculado = 0;
+        
+        int i;
+        for (i = 0; i < MAX_FORMULA - 1 && valor[i] != '\0'; i++) {
+            cel->formula[i] = valor[i];
+        }
+        cel->formula[i] = '\0';
+        
+        char colRef = valor[1];
+        int linRef = 0;
+        for (int j = 2; valor[j] != '\0'; j++) {
+            linRef = linRef * 10 + (valor[j] - '0');
+        }
+        int indiceRef = coordenadaParaIndice(colRef, linRef);
+        if (indiceRef >= 0) {
+            adicionarAresta(g, indice, indiceRef);
+        }
+        
+    } else if (valor[0] == '@') {
+        cel->calculado = 0;
+        
+        int i;
+        for (i = 0; i < MAX_FORMULA - 1 && valor[i] != '\0'; i++) {
+            cel->formula[i] = valor[i];
+        }
+        cel->formula[i] = '\0';
+        
+        if (valor[1] == 's' && valor[2] == 'o' && valor[3] == 'm' && valor[4] == 'a') {
+            cel->tipo = FORMULA_SOMA;
+        } else if (valor[1] == 'm' && valor[2] == 'a' && valor[3] == 'x') {
+            cel->tipo = FORMULA_MAX;
+        } else if (valor[1] == 'm' && valor[2] == 'i' && valor[3] == 'n') {
+            cel->tipo = FORMULA_MIN;
+        } else if (valor[1] == 'm' && valor[2] == 'e' && valor[3] == 'd' && valor[4] == 'i' && valor[5] == 'a') {
+            cel->tipo = FORMULA_MEDIA;
+        }
+        
+        char *inicio = cel->formula;
+        while (*inicio != '(' && *inicio != '\0') inicio++;
+        if (*inicio != '\0') {
+            inicio++;
+            
+            char col1 = inicio[0];
+            int lin1 = 0, j = 1;
+            while (inicio[j] != '.' && inicio[j] != '\0') {
+                lin1 = lin1 * 10 + (inicio[j] - '0');
+                j++;
+            }
+            j += 2;
+            
+            char col2 = inicio[j];
+            int lin2 = 0;
+            j++;
+            while (inicio[j] != ')' && inicio[j] != '\0') {
+                lin2 = lin2 * 10 + (inicio[j] - '0');
+                j++;
+            }
+            
+            for (char c = col1; c <= col2; c++) {
+                for (int l = lin1; l <= lin2; l++) {
+                    int idx = coordenadaParaIndice(c, l);
+                    if (idx >= 0 && idx != indice) {
+                        adicionarAresta(g, indice, idx);
+                    }
+                }
+            }
+        }
+    } else {
+        cel->tipo = VAZIO;
+        cel->valor = 0.0;
+        cel->calculado = 1;
+        cel->formula[0] = '\0';
+    }
+    
+    printf("Celula %c%d definida com sucesso!\n", coluna, linha);
+}
+
+int main() {
+    Grafo g;
+    inicializarGrafo(&g);
+    
+    char entrada[200];
+    char coluna;
+    int linha;
+    char valor[100];
+    
+    printf("=== PLANILHA DE CALCULO ===\n");
+    printf("Colunas: A ate H\n");
+    printf("Linhas: 1 ate 20\n");
+    printf("Formatos de entrada:\n");
+    printf("  - Numero: A5 42.5\n");
+    printf("  - Referencia: A5 =B10\n");
+    printf("  - Formulas: A5 @soma(B1..D3), @max(A1..A5), @min(C1..C10), @media(B2..E4)\n");
+    printf("  - Digite 'mostrar' para exibir a planilha\n");
+    printf("  - Digite 'dep' para mostrar dependencias\n");
+    printf("  - Digite 'sair' para encerrar\n\n");
+        
+    exibirMatriz(&g);
+    
+    while (1) {
+        printf("Digite comando (ex: A5 42 ou 'mostrar'): ");
+        if (fgets(entrada, sizeof(entrada), stdin) == NULL) break;
+        
+        for (int i = 0; entrada[i] != '\0'; i++) {
+            if (entrada[i] == '\n') {
+                entrada[i] = '\0';
+                break;
+            }
+        }
+        
+        if (entrada[0] == 's' && entrada[1] == 'a' && entrada[2] == 'i' && entrada[3] == 'r') {
+            break;
+        }
+        
+        if (entrada[0] == 'm' && entrada[1] == 'o' && entrada[2] == 's' && entrada[3] == 't') {
+            exibirMatriz(&g);
+            continue;
+        }
+        
+        if (entrada[0] == 'd' && entrada[1] == 'e' && entrada[2] == 'p') {
+            exibirDependencias(&g);
+            continue;
+        }
+        
+        if (entrada[0] >= 'A' && entrada[0] <= 'H') {
+            coluna = entrada[0];
+            
+            int i = 1;
+            linha = 0;
+            while (entrada[i] >= '0' && entrada[i] <= '9') {
+                linha = linha * 10 + (entrada[i] - '0');
+                i++;
+            }
+            
+            while (entrada[i] == ' ') i++;
+            
+            int j = 0;
+            while (entrada[i] != '\0' && j < 99) {
+                valor[j] = entrada[i];
+                i++;
+                j++;
+            }
+            valor[j] = '\0';
+            
+            if (linha >= 1 && linha <= 20 && valor[0] != '\0') {
+                definirCelula(&g, coluna, linha, valor);
+                exibirMatriz(&g);
+            } else {
+                printf("Entrada invalida! Use formato: COLUNA LINHA VALOR (ex: A5 42)\n");
+            }
+        } else {
+            printf("Entrada invalida! Use formato: COLUNA LINHA VALOR (ex: A5 42)\n");
+        }
+    }
+    
+    printf("Encerrando planilha...\n");
     return 0;
 }
