@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <math.h>
 
 #define MAX_CELULAS 160  // 8 colunas * 20 linhas
 #define MAX_FORMULA 256
@@ -212,8 +213,8 @@ double calcularCelula(GrafoLista *g, int indice) {
             
             double resultado = 0.0;
             int contador = 0;
-            double max_val = -999999.0;
-            double min_val = 999999.0;
+            double max_val = -INFINITY;
+            double min_val = INFINITY;
             
             for (char c = col1; c <= col2; c++) {
                 for (int l = lin1; l <= lin2; l++) {
