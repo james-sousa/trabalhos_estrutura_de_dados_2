@@ -15,9 +15,9 @@ typedef struct
   int configuracao[NUM_DISCOS];
 } Vertice;
 
-bool movimentoValido(Vertice vertice1, Vertice vertice2)
+int movimentoValido(Vertice vertice1, Vertice vertice2)
 {
-  bool valido = true;
+  int valido = 1;
 
   int diferenca = 0, indiceDiferente = -1;
 
@@ -31,7 +31,7 @@ bool movimentoValido(Vertice vertice1, Vertice vertice2)
   }
 
   if (diferenca > 1)
-    valido = false;
+    valido = 0;
   else
   {
     int invalido = 1;
@@ -42,7 +42,7 @@ bool movimentoValido(Vertice vertice1, Vertice vertice2)
         invalido = 0;
 
     if (!invalido)
-      valido = false;
+      valido = 0;
   }
 
   return (valido);
