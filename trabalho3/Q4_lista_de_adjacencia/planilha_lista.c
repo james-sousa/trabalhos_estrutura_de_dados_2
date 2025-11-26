@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-#include <math.h>
+#include <math.h>   
 
 #define MAX_CELULAS 160  // 8 colunas * 20 linhas
 #define MAX_FORMULA 256
@@ -421,6 +421,78 @@ void exibirDependencias(GrafoLista *g) {
     printf("\n");
 }
 
+// Busca em Profundidade (DFS - Depth-First Search)
+void dfs(GrafoLista *g, int vertice, int visitados[]) {
+    if (vertice < 0 || vertice >= g->numVertices) return;
+    
+    visitados[vertice] = 1;
+    char col;
+    int lin;
+    indiceParaCoordenada(vertice, &col, &lin);
+    printf("%c%d ", col, lin);
+    
+    // Percorre a lista de adjacências do vértice
+    NoAresta *temp = g->celulas[vertice].arestas;
+    while (temp != NULL) {
+        if (!visitados[temp->destino]) {
+            dfs(g, temp->destino, visitados);
+        }
+        temp = temp->proximo;
+    }
+}
+
+void buscarDFS(GrafoLista *g, char coluna, int linha) {
+    int indice = coordenadaParaIndice(coluna, linha);
+    if (indice < 0) {
+        printf("Célula inválida: %c%d\n", coluna, linha);
+        return;
+    }
+    
+    int visitados[MAX_CELULAS] = {0};
+    dfs(g, indice, visitados);
+}
+
+// Busca em Largura (BFS - Breadth-First Search)
+void bfs(GrafoLista *g, int verticeInicio) {
+    if (verticeInicio < 0 || verticeInicio >= g->numVertices) return;
+    
+    int visitados[MAX_CELULAS] = {0};
+    int fila[MAX_CELULAS];
+    int inicio = 0, fim = 0;
+    
+    // Enfileira o vértice inicial
+    fila[fim++] = verticeInicio;
+    visitados[verticeInicio] = 1;
+    
+    while (inicio < fim) {
+        int vertice = fila[inicio++];
+        char col;
+        int lin;
+        indiceParaCoordenada(vertice, &col, &lin);
+        printf("%c%d ", col, lin);
+        
+        // Enfileira os vizinhos não visitados
+        NoAresta *temp = g->celulas[vertice].arestas;
+        while (temp != NULL) {
+            if (!visitados[temp->destino]) {
+                visitados[temp->destino] = 1;
+                fila[fim++] = temp->destino;
+            }
+            temp = temp->proximo;
+        }
+    }
+}
+
+void buscarBFS(GrafoLista *g, char coluna, int linha) {
+    int indice = coordenadaParaIndice(coluna, linha);
+    if (indice < 0) {
+        printf("Célula inválida: %c%d\n", coluna, linha);
+        return;
+    }
+    
+    bfs(g, indice);
+}
+
 // Liberar memória do grafo
 void liberarGrafo(GrafoLista *g) {
     for (int i = 0; i < MAX_CELULAS; i++) {
@@ -447,6 +519,8 @@ int main() {
     printf("  - Formulas: A5 @soma(B1..D3), @max(A1..A5), @min(C1..C10), @media(B2..E4)\n");
     printf("  - Digite 'mostrar' para exibir a planilha\n");
     printf("  - Digite 'dep' para mostrar dependencias\n");
+    printf("  - Digite 'dfs COLUNA LINHA' para busca em profundidade (ex: dfs A5)\n");
+    printf("  - Digite 'bfs COLUNA LINHA' para busca em largura (ex: bfs A5)\n");
     printf("  - Digite 'sair' para encerrar\n\n");
         
     exibirMatriz(g);
@@ -473,6 +547,44 @@ int main() {
         
         if (entrada[0] == 'd' && entrada[1] == 'e' && entrada[2] == 'p') {
             exibirDependencias(g);
+            continue;
+        }
+        
+        if (entrada[0] == 'd' && entrada[1] == 'f' && entrada[2] == 's' && entrada[3] == ' ') {
+            coluna = entrada[4];
+            linha = 0;
+            int i = 5;
+            while (entrada[i] >= '0' && entrada[i] <= '9') {
+                linha = linha * 10 + (entrada[i] - '0');
+                i++;
+            }
+            if (coluna >= 'A' && coluna <= 'H' && linha >= 1 && linha <= 20) {
+                printf("\n=== BUSCA EM PROFUNDIDADE (DFS) - Dependências de %c%d ===\n", coluna, linha);
+                printf("Células que %c%d depende (ordem DFS): ", coluna, linha);
+                buscarDFS(g, coluna, linha);
+                printf("\n");
+            } else {
+                printf("Coordenada invalida!\n");
+            }
+            continue;
+        }
+        
+        if (entrada[0] == 'b' && entrada[1] == 'f' && entrada[2] == 's' && entrada[3] == ' ') {
+            coluna = entrada[4];
+            linha = 0;
+            int i = 5;
+            while (entrada[i] >= '0' && entrada[i] <= '9') {
+                linha = linha * 10 + (entrada[i] - '0');
+                i++;
+            }
+            if (coluna >= 'A' && coluna <= 'H' && linha >= 1 && linha <= 20) {
+                printf("\n=== BUSCA EM LARGURA (BFS) - Dependências de %c%d ===\n", coluna, linha);
+                printf("Células que %c%d depende (ordem BFS): ", coluna, linha);
+                buscarBFS(g, coluna, linha);
+                printf("\n");
+            } else {
+                printf("Coordenada invalida!\n");
+            }
             continue;
         }
         
