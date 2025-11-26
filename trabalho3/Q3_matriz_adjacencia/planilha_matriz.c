@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-#include <math.h>
+#include <math.h>   
 
 #define COLUNAS 8
 #define LINHAS 20
@@ -201,6 +201,82 @@ void exibirDependencias(Grafo *g) {
         }
     }
     printf("\n");
+}
+
+// Busca em Profundidade (DFS - Depth-First Search)
+// Encontra todas as células que dependem (direta ou indiretamente) de uma célula
+void dfs(Grafo *g, int vertice, int visitados[]) {
+    if (vertice < 0 || vertice >= g->num_vertices) return;
+    
+    visitados[vertice] = 1;
+    char col;
+    int lin;
+    indiceParaCoordenada(vertice, &col, &lin);
+    printf("%c%d ", col, lin);
+    
+    // Recursivamente visita os vizinhos não visitados
+    for (int i = 0; i < g->num_vertices; i++) {
+        if (g->matriz[vertice][i] == 1 && !visitados[i]) {
+            dfs(g, i, visitados);
+        }
+    }
+}
+
+void buscarDFS(Grafo *g, char coluna, int linha) {
+    int indice = coordenadaParaIndice(coluna, linha);
+    if (indice < 0) {
+        printf("Célula inválida: %c%d\n", coluna, linha);
+        return;
+    }
+    
+    int visitados[MAX_CELULAS] = {0};
+    printf("\n=== BUSCA EM PROFUNDIDADE (DFS) - Dependências de %c%d ===\n", coluna, linha);
+    printf("Células que %c%d depende (ordem DFS): ", coluna, linha);
+    dfs(g, indice, visitados);
+    printf("\n\n");
+}
+
+// Busca em Largura (BFS - Breadth-First Search)
+// Encontra todas as células que dependem (direta ou indiretamente) de uma célula
+void bfs(Grafo *g, int verticeInicio) {
+    if (verticeInicio < 0 || verticeInicio >= g->num_vertices) return;
+    
+    int visitados[MAX_CELULAS] = {0};
+    int fila[MAX_CELULAS];
+    int inicio = 0, fim = 0;
+    
+    // Enfileira o vértice inicial
+    fila[fim++] = verticeInicio;
+    visitados[verticeInicio] = 1;
+    
+    while (inicio < fim) {
+        int vertice = fila[inicio++];
+        char col;
+        int lin;
+        indiceParaCoordenada(vertice, &col, &lin);
+        printf("%c%d ", col, lin);
+        
+        // Enfileira os vizinhos não visitados
+        for (int i = 0; i < g->num_vertices; i++) {
+            if (g->matriz[vertice][i] == 1 && !visitados[i]) {
+                visitados[i] = 1;
+                fila[fim++] = i;
+            }
+        }
+    }
+}
+
+void buscarBFS(Grafo *g, char coluna, int linha) {
+    int indice = coordenadaParaIndice(coluna, linha);
+    if (indice < 0) {
+        printf("Célula inválida: %c%d\n", coluna, linha);
+        return;
+    }
+    
+    printf("\n=== BUSCA EM LARGURA (BFS) - Dependências de %c%d ===\n", coluna, linha);
+    printf("Células que %c%d depende (ordem BFS): ", coluna, linha);
+    bfs(g, indice);
+    printf("\n\n");
 }
 
 // Calcular valor de uma célula com base em sua fórmula
@@ -437,6 +513,8 @@ int main() {
     printf("  - Formulas: A5 @soma(B1..D3), @max(A1..A5), @min(C1..C10), @media(B2..E4)\n");
     printf("  - Digite 'mostrar' para exibir a planilha\n");
     printf("  - Digite 'dep' para mostrar dependencias\n");
+    printf("  - Digite 'dfs COLUNA LINHA' para busca em profundidade (ex: dfs A5)\n");
+    printf("  - Digite 'bfs COLUNA LINHA' para busca em largura (ex: bfs A5)\n");
     printf("  - Digite 'sair' para encerrar\n\n");
         
     exibirMatriz(&g);
@@ -463,6 +541,46 @@ int main() {
         
         if (entrada[0] == 'd' && entrada[1] == 'e' && entrada[2] == 'p') {
             exibirDependencias(&g);
+            continue;
+        }
+        
+        // Comando DFS
+        if (entrada[0] == 'd' && entrada[1] == 'f' && entrada[2] == 's') {
+            int i = 3;
+            while (entrada[i] == ' ') i++;
+            
+            if (entrada[i] >= 'A' && entrada[i] <= 'H') {
+                char colDFS = entrada[i];
+                i++;
+                int linDFS = 0;
+                while (entrada[i] >= '0' && entrada[i] <= '9') {
+                    linDFS = linDFS * 10 + (entrada[i] - '0');
+                    i++;
+                }
+                buscarDFS(&g, colDFS, linDFS);
+            } else {
+                printf("Uso: dfs COLUNA LINHA (ex: dfs A5)\n");
+            }
+            continue;
+        }
+        
+        // Comando BFS
+        if (entrada[0] == 'b' && entrada[1] == 'f' && entrada[2] == 's') {
+            int i = 3;
+            while (entrada[i] == ' ') i++;
+            
+            if (entrada[i] >= 'A' && entrada[i] <= 'H') {
+                char colBFS = entrada[i];
+                i++;
+                int linBFS = 0;
+                while (entrada[i] >= '0' && entrada[i] <= '9') {
+                    linBFS = linBFS * 10 + (entrada[i] - '0');
+                    i++;
+                }
+                buscarBFS(&g, colBFS, linBFS);
+            } else {
+                printf("Uso: bfs COLUNA LINHA (ex: bfs A5)\n");
+            }
             continue;
         }
         
