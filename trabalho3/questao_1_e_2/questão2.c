@@ -181,7 +181,7 @@ void exibir_config(Vertice *vertice)
 {
   for (int config_atual = 0; config_atual < CONFIGURACAO_MAXIMA; ++config_atual)
   {
-    printf("vertex %d: ", config_atual);
+    printf("vertex %d: ", config_atual + 1);
     for (int disco_atual = 0; disco_atual < NUM_DISCOS; disco_atual++)
       printf("%d ", vertice[config_atual].configuracao[disco_atual]);
     printf("\n");
@@ -201,36 +201,92 @@ void liberar_memoria(ListaAdj *listaAdj)
     }
   }
 }
-
 int main()
 {
-  Vertice grafo[CONFIGURACAO_MAXIMA];
-  ListaAdj listaAdj[CONFIGURACAO_MAXIMA];
+    Vertice grafo[CONFIGURACAO_MAXIMA];
+    ListaAdj listaAdj[CONFIGURACAO_MAXIMA];
 
-  gerarConfiguracoes(grafo, listaAdj);
-  exibir_config(grafo);
+    int distancias[CONFIGURACAO_MAXIMA];
+    int predecessor[CONFIGURACAO_MAXIMA];
 
-  int inicial, final;
-  printf("Digite o índice da configuração inicial (0 a %d): ", CONFIGURACAO_MAXIMA - 1);
-  scanf("%d", &inicial);
-  printf("Digite o índice da configuração final (0 a %d): ", CONFIGURACAO_MAXIMA - 1);
-  scanf("%d", &final);
+    int inicial, final;
+    int opcao;
+    int configuracoesGeradas = 0;
+    int dijkstraExecutado = 0;
 
-  int distancias[CONFIGURACAO_MAXIMA];
-  int predecessor[CONFIGURACAO_MAXIMA];
+    do {
+        printf("\n=== MENU ===\n");
+        printf("1 - Gerar configurações\n");
+        printf("2 - Exibir configurações\n");
+        printf("3 - Definir inicial e final\n");
+        printf("4 - Executar Dijkstra\n");
+        printf("5 - Exibir caminho\n");
+        printf("0 - Sair\n");
+        printf("Escolha uma opção: ");
+        scanf("%d", &opcao);
 
-  clock_t inicio, fim;
-  inicio = clock();
-  dijkstra(inicial, listaAdj, distancias, predecessor);
-  fim = clock();
+        switch(opcao)
+        {
+            case 1:
+                gerarConfiguracoes(grafo, listaAdj);
+                configuracoesGeradas = 1;
+                dijkstraExecutado = 0;
+                printf("\nConfigurações geradas!\n");
+                break;
 
-  exibir_caminho(inicial, final, distancias, predecessor);
+            case 2:
+                if (!configuracoesGeradas) {
+                    printf("\nERRO: Gere as configurações primeiro!\n");
+                } else {
+                    exibir_config(grafo);
+                }
+                break;
 
-  double tempo = (double)(fim - inicio) / CLOCKS_PER_SEC;
-  printf("Tempo do algoritmo de dijkstra: %f segundos\n", tempo);
+            case 3:
+                if (!configuracoesGeradas) {
+                    printf("\nERRO: Gere as configurações primeiro!\n");
+                } else {
+                    printf("Digite o índice inicial (1 a %d): ", CONFIGURACAO_MAXIMA);
+                    scanf("%d", &inicial);
 
-  // Liberar memória alocada
-  liberar_memoria(listaAdj);
+                    printf("Digite o índice final (1 a %d): ", CONFIGURACAO_MAXIMA);
+                    scanf("%d", &final);
+                }
+                break;
 
-  return 0;
+            case 4:
+                if (!configuracoesGeradas) {
+                    printf("\nERRO: Gere configurações antes de rodar Dijkstra!\n");
+                } else {
+                    clock_t inicio = clock();
+                    dijkstra(inicial, listaAdj, distancias, predecessor);
+                    clock_t fim = clock();
+
+                    double tempo = (double)(fim - inicio) / CLOCKS_PER_SEC;
+                    printf("Tempo do algoritmo de dijkstra: %f segundos\n", tempo);
+
+                    dijkstraExecutado = 1;
+                }
+                break;
+
+            case 5:
+                if (!dijkstraExecutado) {
+                    printf("\nERRO: Execute Dijkstra antes de exibir o caminho!\n");
+                } else {
+                    exibir_caminho(inicial, final, distancias, predecessor);
+                }
+                break;
+
+            case 0:
+                printf("\nEncerrando...\n");
+                break;
+
+            default:
+                printf("\nOpção inválida!\n");
+        }
+
+    } while (opcao != 0);
+
+    liberar_memoria(listaAdj);
+    return 0;
 }
