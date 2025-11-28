@@ -9,7 +9,7 @@
 #define LINHAS 20
 #define MAX_CELULAS (COLUNAS * LINHAS)
 #define MAX_FORMULA 100
-#define NUM_REPETICOES_Q6 30 // p/ os testes.
+#define NUM_REPETICOES_Q6 30// p/ os testes.
 
 typedef enum {
     NUMERO,
@@ -214,7 +214,7 @@ void dfs(Grafo *g, int vertice, int visitados[]) {
     char col;
     int lin;
     indiceParaCoordenada(vertice, &col, &lin);
-    printf("%c%d ", col, lin);
+    printf("%c%d ", col, lin);  // comentar para testes
     
     // Recursivamente visita os vizinhos não visitados
     for (int i = 0; i < g->num_vertices; i++) {
@@ -256,7 +256,7 @@ void bfs(Grafo *g, int verticeInicio) {
         char col;
         int lin;
         indiceParaCoordenada(vertice, &col, &lin);
-        printf("%c%d ", col, lin);
+        printf("%c%d ", col, lin);    // comentar para testes
         
         // Enfileira os vizinhos não visitados
         for (int i = 0; i < g->num_vertices; i++) {
@@ -506,16 +506,24 @@ void definirCelula(Grafo *g, char coluna, int linha, const char *valor) {
         cel->formula[0] = '\0';
     }
     
-    printf("Celula %c%d definida com sucesso!\n", coluna, linha);
+    printf("Celula %c%d definida com sucesso!\n", coluna, linha); // comentar para os testes
 }
 
 // ============ QUESTAO 6: ANALISE DE DESEMPENHO ============
 void executarQ6(Grafo *g) {
-    const char *dados[20] = {
+    const char *dados[60] = {
         "10.0", "20.0", "30.0", "40.0", "50.0",
         "60.0", "70.0", "80.0", "90.0", "100.0",
         "15.0", "25.0", "35.0", "45.0", "55.0",
-        "65.0", "75.0", "85.0", "95.0", "105.0"
+        "65.0", "75.0", "85.0", "95.0", "105.0",
+        "12.0", "22.0", "32.0", "42.0", "52.0",
+        "62.0", "72.0", "82.0", "92.0", "102.0",
+        "18.0", "28.0", "38.0", "48.0", "58.0",
+        "68.0", "78.0", "88.0", "98.0", "108.0",
+        "11.0", "21.0", "31.0", "41.0", "51.0",
+        "61.0", "71.0", "81.0", "91.0", "101.0",
+        "16.0", "26.0", "36.0", "46.0", "56.0",
+        "66.0", "76.0", "86.0", "96.0", "106.0"
     };
     
     printf("\n=== QUESTAO 6: ANALISE DE DESEMPENHO (MATRIZ) ===\n");
@@ -523,18 +531,16 @@ void executarQ6(Grafo *g) {
     
     // (a) Tempo de inserção de dados
     printf("(a) TEMPO DE INSERCAO DE DADOS\n");
+    printf("============================\n");
     
     clock_t inicio_insercao = clock();
     
     for (int rep = 0; rep < NUM_REPETICOES_Q6; rep++) {
-        Grafo g_teste;
-        inicializarGrafo(&g_teste);
-        
-        // Inserir 20 dados
-        for (int i = 0; i < 20; i++) {
-            char col = 'A';
-            int lin = i + 1;
-            definirCelula(&g_teste, col, lin, dados[i]);
+        // Inserir 60 dados no grafo g
+        for (int i = 0; i < 60; i++) {
+            char col = 'A' + (i / 20);
+            int lin = (i % 20) + 1;
+            definirCelula(g, col, lin, dados[i]);
         }
     }
     
@@ -543,23 +549,19 @@ void executarQ6(Grafo *g) {
     double tempo_insercao_medio = tempo_insercao_total / NUM_REPETICOES_Q6;
     double tempo_insercao_ns = (tempo_insercao_medio * 1000000000.0);
     
-    printf("\nTempo total: %.6f segundos (%d repeticoes)\n", tempo_insercao_total, NUM_REPETICOES_Q6);
+    printf("Tempo total: %.6f segundos (%d repeticoes)\n", tempo_insercao_total, NUM_REPETICOES_Q6);
     printf("Tempo medio por ciclo: %.6f segundos (%.2f ns)\n", tempo_insercao_medio, tempo_insercao_ns);
-    printf("Tempo medio por item: %.6f segundos (%.2f ns)\n\n", tempo_insercao_medio / 20, tempo_insercao_ns / 20);
+    printf("Tempo medio por item: %.6f segundos (%.2f ns)\n\n", tempo_insercao_medio / 60, tempo_insercao_ns / 60);
+    
+    printf("Planilha preenchida com sucesso!\n\n");
     
     // (b) Tempo de BFS
     printf("(b) TEMPO DE BUSCA EM LARGURA (BFS)\n");
     
-    Grafo g_teste2;
-    inicializarGrafo(&g_teste2);
-    for (int i = 0; i < 20; i++) {
-        definirCelula(&g_teste2, 'A', i + 1, dados[i]);
-    }
-    
     clock_t inicio_bfs = clock();
     
     for (int rep = 0; rep < NUM_REPETICOES_Q6; rep++) {
-        bfs(&g_teste2, coordenadaParaIndice('A', 1));
+        bfs(g, coordenadaParaIndice('A', 1));
     }
     
     clock_t fim_bfs = clock();
@@ -577,7 +579,7 @@ void executarQ6(Grafo *g) {
     
     for (int rep = 0; rep < NUM_REPETICOES_Q6; rep++) {
         int visitados[MAX_CELULAS] = {0};
-        dfs(&g_teste2, coordenadaParaIndice('A', 1), visitados);
+        dfs(g, coordenadaParaIndice('A', 1), visitados);
     }
     
     clock_t fim_dfs = clock();
@@ -590,14 +592,13 @@ void executarQ6(Grafo *g) {
     
     // Comparação e análise
     printf("COMPARACAO E ANALISE DOS RESULTADOS\n");
-    printf("Numero de dados insertados: 20\n");
     printf("Numero de vertices no grafo: %d\n", MAX_CELULAS);
     printf("Repeticoes: %d\n\n", NUM_REPETICOES_Q6);
     
     printf("RESUMO DOS TEMPOS MEDIOS:\n");
-    printf("  Insercao: %.10f seg\n", tempo_insercao_medio);
-    printf("  BFS:      %.10f seg\n", tempo_bfs_medio);
-    printf("  DFS:      %.10f seg\n\n", tempo_dfs_medio);
+    printf("  Insercao:  %.10f seg (%.2f ns)\n", tempo_insercao_medio, tempo_insercao_ns);
+    printf("  BFS:       %.10f seg (%.2f ns)\n", tempo_bfs_medio, tempo_bfs_ns);
+    printf("  DFS:       %.10f seg (%.2f ns)\n\n", tempo_dfs_medio, tempo_dfs_ns);
     
     printf("ANALISE:\n");
     printf("  1. Tamanho do Grafo:\n");
@@ -606,7 +607,7 @@ void executarQ6(Grafo *g) {
     printf("     - Complexidade Espacial: O(V^2) = O(%d)\n", MAX_CELULAS * MAX_CELULAS);
     
     printf("\n  2. Complexidade Temporal:\n");
-    printf("     - Insercao: O(n * m) onde n=20, m=160\n");
+    printf("     - Insercao: O(n*m) onde n=60, m=160\n");
     printf("     - BFS: O(V^2) no pior caso (matriz densa)\n");
     printf("     - DFS: O(V^2) no pior caso (matriz densa)\n");
     
