@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdbool.h>
+
 #include <limits.h>
 #include <time.h>
 
@@ -73,7 +73,7 @@ void gerarConfiguracoes(Vertice *grafo, int matrizAdj[][CONFIGURACAO_MAXIMA])
         matrizAdj[indiceAtual][indiceVizinho] = 0;
 }
 
-void djcastra(int inicio, int matrizAdj[CONFIGURACAO_MAXIMA][CONFIGURACAO_MAXIMA], int *distancias, int *predecessor)
+void djikstra(int inicio, int matrizAdj[CONFIGURACAO_MAXIMA][CONFIGURACAO_MAXIMA], int *distancias, int *predecessor)
 {
   int visitados[CONFIGURACAO_MAXIMA];
 
@@ -157,38 +157,80 @@ void exibir_config(Vertice *vetice)
 {
   for (int config_atual = 0; config_atual < CONFIGURACAO_MAXIMA; ++config_atual)
   {
-    printf("vertex %d: ", config_atual);
+    printf("vertex %d: ", config_atual + 1);
     for (int disco_atual = 0; disco_atual < NUM_DISCOS; disco_atual++)
       printf("%d ", vetice[config_atual].configuracao[disco_atual]);
     printf("\n");
   }
 }
 
-int main()
-{
-  Vertice grafo[CONFIGURACAO_MAXIMA];
-  int matrizAdj[CONFIGURACAO_MAXIMA][CONFIGURACAO_MAXIMA];
+int main() {
+    Vertice grafo[CONFIGURACAO_MAXIMA];
+    int matrizAdj[CONFIGURACAO_MAXIMA][CONFIGURACAO_MAXIMA];
 
-  gerarConfiguracoes(grafo, matrizAdj);
-  exibir_config(grafo);
+    int distancias[CONFIGURACAO_MAXIMA];
+    int predecessor[CONFIGURACAO_MAXIMA];
 
-  int inicial, final;
-  printf("Digite o índice da configuração inicial (0 a %d): ", CONFIGURACAO_MAXIMA - 1);
-  scanf("%d", &inicial);
-  printf("Digite o índice da configuração final (0 a %d): ", CONFIGURACAO_MAXIMA - 1);
-  scanf("%d", &final);
+    int inicial, final;
+    int opcao;
+    int configuracoesGeradas = 0; // Para evitar rodar Dijkstra sem dados
 
-  int distancias[CONFIGURACAO_MAXIMA];
-  int predecessor[CONFIGURACAO_MAXIMA];
+    do {
+        printf("\n===== MENU =====\n");
+        printf("1 - Gerar configuracoes\n");
+        printf("2 - Exibir configuracoes\n");
+        printf("3 - Executar Dijkstra\n");
+        printf("4 - Sair\n");
+        printf("Escolha uma opcao: ");
+        scanf("%d", &opcao);
 
-  clock_t inicio, fim;
-  inicio = clock();
-  djcastra(inicial, matrizAdj, distancias, predecessor);
-  fim = clock();
+        switch(opcao) {
+            case 1:
+                gerarConfiguracoes(grafo, matrizAdj);
+                configuracoesGeradas = 1;
+                printf("Configuracoes geradas com sucesso!\n");
+                break;
 
-  exibir_caminho(inicial, final, distancias, predecessor);
+            case 2:
+                if (!configuracoesGeradas) {
+                    printf("Gere as configuracoes primeiro! (Opcao 1)\n");
+                } else {
+                    exibir_config(grafo);
+                }
+                break;
 
-  double tempo = (double)(fim - inicio) / CLOCKS_PER_SEC;
-  printf("Tempo do algoritmo de dijkshtra: %f segundos\n", tempo);
-  return 0;
+            case 3:
+                if (!configuracoesGeradas) {
+                    printf("Gere as configuracoes primeiro! (Opcao 1)\n");
+                    break;
+                }
+
+                printf("Digite o indice da configuracao inicial (1 a %d): ", CONFIGURACAO_MAXIMA);
+                scanf("%d", &inicial);
+                printf("Digite o indice da configuracao final (1 a %d): ", CONFIGURACAO_MAXIMA);
+                scanf("%d", &final);
+
+                clock_t inicio, fim;
+                inicio = clock();
+                djikstra(inicial, matrizAdj, distancias, predecessor);
+                fim = clock();
+
+                exibir_caminho(inicial, final, distancias, predecessor);
+
+                double tempo = (double)(fim - inicio) / CLOCKS_PER_SEC;
+                printf("Tempo do algoritmo de Dijkstra: %f segundos\n", tempo);
+                break;
+
+            case 4:
+                printf("Encerrando o programa...\n");
+                break;
+
+            default:
+                printf("Opcao invalida! Tente novamente.\n");
+                break;
+        }
+
+    } while(opcao != 4);
+
+    return 0;
 }
